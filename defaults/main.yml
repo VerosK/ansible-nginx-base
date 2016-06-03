@@ -1,0 +1,2 @@
+nginx_sites_dir: /etc/nginx/sites.d
+nginx_htpasswd_dir: /etc/nginx/basic_auth.d

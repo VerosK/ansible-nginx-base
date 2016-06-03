@@ -1,0 +1,68 @@
+---
+- name: Create {{ item.host }} certificate dir
+  file:
+    dest: /etc/pki/acme/{{ item.host }}
+    state: directory
+  when: item.request_acme_cert
+
+- name: Create {{ item.host }} certificate dir
+  file:
+    dest: /etc/pki/nginx/{{ item.host }}
+    state: directory
+  when: not item.request_acme_cert
+
+- set_fact:
+    nginx_host_passwd_file: "{{nginx_htpasswd_dir}}/{{item.host}}.htpasswd"
+
+- name: "Create {{item.host}} config"
+  template:
+    dest: "{{nginx_sites_dir}}/{{item.host}}.conf"
+    src: nginx-static-site.j2
+  notify: reload nginx
+
+- name: "Create {{item.host}} paswords"
+  template:
+    dest: "{{nginx_host_passwd_file}}"
+    src: nginx-htpasswd.j2
+  when: item.http_basic_auth is defined
+
+- name: Check fullchain exists
+  file:
+    dest: /etc/pki/acme/{{item.host}}/fullchain.pem
+    state: file
+  when: item.request_acme_cert
+  register: has_chainfile
+  ignore_errors: yes
+
+- debug:
+    var: has_chainfile
+
+- name: Create dummy chainfile
+  shell: /etc/pki/tls/certs/make-dummy-cert /etc/pki/acme/{{item.host}}/fullchain.pem
+  when: item.request_acme_cert and has_chainfile|failed
+  register: need_chainfile
+
+- name: Create dummy chainfile
+  shell: cp /etc/pki/acme/{{item.host}}/fullchain.pem /etc/pki/acme/{{item.host}}/key.pem
+  when: item.request_acme_cert and has_chainfile|failed
+
+- name: Restart nginx
+  service:
+    name: nginx
+    state: restarted
+  when: need_chainfile|changed
+
+- name: Delete wrong certificates
+  shell: rm *.pem -f
+  args:
+    chdir: /etc/pki/acme/{{item.host}}/
+    creates: account_key.json
+  when: item.request_acme_cert
+
+- name: Generate simp_le certificate
+  shell: simp_le -d {{item.host}}:/var/www -f key.pem -f fullchain.pem -f cert.pem -f account_key.json
+  args:
+    chdir: /etc/pki/acme/{{item.host}}/
+    creates: /etc/pki/acme/{{item.host}}/account_key.json
+  notify: reload nginx
+  when: item.request_acme_cert

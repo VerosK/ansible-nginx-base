@@ -1,0 +1,58 @@
+---
+- name: Install nginx and simp_le to frontend host
+  yum: name={{item}} state=installed
+  with_items:
+    - nginx
+    - simp_le
+
+- name: Create safe DH params
+  include: nginx-dhparams.yml
+
+- name: Create sites.d
+  file:
+    dest: "{{nginx_sites_dir}}"
+    state: directory
+  when: nginx_sites_dir is defined
+
+- name: Create passwords_dir
+  file:
+    dest: "{{nginx_htpasswd_dir}}"
+    state: directory
+  when: nginx_htpasswd_dir is defined
+
+- name: Drop default config
+  file:
+    dest: /etc/nginx/conf.d/default.conf
+    state: absent
+  notify: reload nginx
+  tags: default_server
+
+- name: Create master cofnig
+  template:
+    dest: /etc/nginx/nginx.conf
+    src: nginx.conf.j2
+  notify: reload nginx
+
+- name: Create .well-known directory
+  file:
+    dest: /var/www/.well-known
+    state: directory
+
+- name: Create pure no ssl site
+  template:
+     dest: /etc/nginx/conf.d/00-plain-http.conf
+     src: nginx-no-ssl.j2
+
+- name: Create forward files
+  include: nginx_static_site.yml
+  with_items: nginx_sites
+  notify: reload nginx
+
+- name: Enable nginx
+  service: name=nginx enabled=yes state=running
+
+- name: Enable ports 80 & 443
+  firewalld: permanent=yes immediate=yes
+             service={{ item }} zone=public state=enabled
+  with_items: [ http, https ]
+  ignore_errors: yes
