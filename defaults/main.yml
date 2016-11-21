@@ -1,2 +1,28 @@
 nginx_sites_dir: /etc/nginx/sites.d
 nginx_htpasswd_dir: /etc/nginx/basic_auth.d
+
+nginx_dhparam_bits: 2048
+nginx_group: nginx
+
+nginx_make_config_backup: false
+
+nginx_sites: []
+#  - name: gitlab.toaster.cz
+#    is_default: true
+#    with_ssl: true
+#    without_ssl: false
+#    request_acme_cert: true
+#    http_basic_auth:
+#        foo: $apr1$bIt0YLXq$ZNnbl5xVAZgA6Mz2.qa4i/        # wtf
+#        bar:  $apr1$bIt0YLXq$ZNnbl5xVAZgA6Mz2.qa4i/        # wtf
+#    root_config: >
+#        location / {
+#                proxy_pass http://127.0.0.1:{{ gitlab_http_port }}/;
+#                proxy_read_timeout 90;
+#                proxy_set_header Host        $http_host;
+#                proxy_set_header X-Forwarded-For $remote_addr;
+#                proxy_set_header X-Forwarded-Proto "https";
+#        #       proxy_set_header X-Forwarded-User $remote_user;
+#
+#                client_max_body_size    128m;
+#        }

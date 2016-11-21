@@ -1,22 +1,31 @@
 ---
 - name: Install nginx and simp_le to frontend host
-  yum: name={{item}} state=installed
+  yum:
+    name: '{{item}}'
+    state: installed
+    enablerepo: epel
+    disable_gpg_check: true
   with_items:
     - nginx
-    - simp_le
+
+- name: Enable ports 80 & 443
+  firewalld: permanent=yes immediate=yes
+             service={{ item }} zone=public state=enabled
+  with_items: [ http, https ]
+  ignore_errors: yes
 
 - name: Create safe DH params
   include: nginx-dhparams.yml
 
 - name: Create sites.d
   file:
-    dest: "{{nginx_sites_dir}}"
+    dest: "{{ nginx_sites_dir }}"
     state: directory
   when: nginx_sites_dir is defined
 
 - name: Create passwords_dir
   file:
-    dest: "{{nginx_htpasswd_dir}}"
+    dest: "{{ nginx_htpasswd_dir }}"
     state: directory
   when: nginx_htpasswd_dir is defined
 
@@ -30,7 +39,7 @@
 - name: Create master cofnig
   template:
     dest: /etc/nginx/nginx.conf
-    src: nginx.conf.j2
+    src: nginx-main.conf.j2
   notify: reload nginx
 
 - name: Create .well-known directory
@@ -38,21 +47,20 @@
     dest: /var/www/.well-known
     state: directory
 
-- name: Create pure no ssl site
-  template:
-     dest: /etc/nginx/conf.d/00-plain-http.conf
-     src: nginx-no-ssl.j2
+- name: Make sure empty config files exists
+  include: nginx_static_site_preflight.yml
+  with_items: '{{ nginx_sites }}'
+  loop_control:
+    loop_var: nginx_site
 
-- name: Create forward files
+- name: Create static sites
   include: nginx_static_site.yml
-  with_items: nginx_sites
-  notify: reload nginx
+  with_items: '{{ nginx_sites }}'
+  loop_control:
+    loop_var: nginx_site
 
 - name: Enable nginx
-  service: name=nginx enabled=yes state=running
-
-- name: Enable ports 80 & 443
-  firewalld: permanent=yes immediate=yes
-             service={{ item }} zone=public state=enabled
-  with_items: [ http, https ]
-  ignore_errors: yes
+  service:
+    name: nginx
+    enabled: yes
+    state: running

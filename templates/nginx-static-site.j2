@@ -3,21 +3,30 @@
 # {{ ansible_managed }}
 #
 
-# {{ item.host }}
+# {{ nginx_site.name}}
 
 server {
-        listen 443 ssl;
-        server_name {{ item.host }};
-        access_log  /var/log/nginx/{{item.host}}-access_log main;
-
-{% if item.request_acme_cert %}
-        ssl_certificate      /etc/pki/acme/{{ item.host }}/fullchain.pem;
-        ssl_certificate_key  /etc/pki/acme/{{ item.host }}/key.pem;
-{% else %}
-        ssl_certificate      /etc/pki/nginx/{{ item.host }}/cert.pem
-        ssl_certificate_key  /etc/pki/nginx/{{ item.host }}/key.pem;
+{% if nginx_site.with_ssl %}
+        listen 443 ssl
+        {%- if nginx_site.is_default|default(False) %} default_server {% endif %};
+{%  endif %}
+{% if not nginx_site.with_ssl or nginx_site.without_ssl|default(False) %}
+        listen 80
+        {%- if nginx_site.is_default|default(False) %} default_server {% endif %};
 {% endif %}
 
+        server_name {{ nginx_site.name }};
+        access_log  /var/log/nginx/{{nginx_site.name}}-access_log main;
+        error_log /var/log/nginx/{{nginx_site.name}}-error_log;
+
+{% if nginx_site.with_ssl %}        {#  FIXME: parametrize this #}
+    {% if nginx_site.request_acme_cert %}
+        ssl_certificate      /etc/pki/acme/{{ nginx_site.name }}/fullchain.pem;
+        ssl_certificate_key  /etc/pki/acme/{{ nginx_site.name }}/key.pem;
+    {% else %}
+        ssl_certificate      /etc/pki/nginx/{{ nginx_site.name }}/cert.pem
+        ssl_certificate_key  /etc/pki/nginx/{{ nginx_site.name }}/key.pem;
+    {% endif %}
 
         ssl_session_cache shared:SSL:1m;
         ssl_session_timeout  5m;
@@ -26,26 +35,54 @@ server {
         ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
         ssl_ciphers 'EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH';
         ssl_dhparam /etc/nginx/dhparams.pem;
-
-{% if nginx_host_passwd_file %}
-        # protected location
 {% endif %}
-{% if item.root_config|default(None) %}
+
+
+{% if 'http_basic_auth' in nginx_site %}
+    # protected location
+    auth_basic "{{ nginx_site.name }} password required";
+    auth_basic_user_file {{ _nginx_host_passwd_file }};
+{% endif %}
+
+{% if nginx_site.root_config|default(None) %}
         # Using custom root_config
-{{ item.root_config }}
+{{ nginx_site.root_config }}
         # end of custom root_config
 {% else %}
         location / {
-{% if 'http_basic_auth' in item %}
+{% if 'http_basic_auth' in nginx_site %}
                 proxy_set_header X-Forwarded-User $remote_user;
 {% endif %}
-                root /var/www/{{ item.host }}/;
+                root {{ _nginx_root }};
                 client_max_body_size    128m;
-{% if 'http_basic_auth' in item %}
-                auth_basic "{{ item.host }} password required";
-                auth_basic_user_file {{nginx_host_passwd_file}};
-{% endif %}
         }
 {% endif %}
+    # Add acme-challenge for LetsEncrypt
+    location /.well-known/acme-challenge {
+        alias /var/www/.well-known/acme-challenge;
+    }
+
 }
-# {{ ansible_managed }}
+
+{% if nginx_site.with_ssl and not nginx_site.without_ssl|default(False) %}
+# create port 80 redirect
+server {
+    listen 80
+    {%- if nginx_site.is_default|default(False) %} default_server {% endif %};
+
+    server_name {{ nginx_site.name }};
+
+    access_log  /var/log/nginx/{{nginx_site.name}}-80-access_log main;
+    error_log /var/log/nginx/{{nginx_site.name}}-80-error_log;
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+
+    # Add acme-challenge for LetsEncrypt
+    location /.well-known/acme-challenge {
+        alias /var/www/.well-known/acme-challenge;
+    }
+
+}
+{% endif %}

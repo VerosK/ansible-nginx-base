@@ -1,68 +1,109 @@
 ---
-- name: Create {{ item.host }} certificate dir
-  file:
-    dest: /etc/pki/acme/{{ item.host }}
-    state: directory
-  when: item.request_acme_cert
-
-- name: Create {{ item.host }} certificate dir
-  file:
-    dest: /etc/pki/nginx/{{ item.host }}
-    state: directory
-  when: not item.request_acme_cert
-
 - set_fact:
-    nginx_host_passwd_file: "{{nginx_htpasswd_dir}}/{{item.host}}.htpasswd"
+    _nginx_host_passwd_file: "{{nginx_htpasswd_dir}}/{{nginx_site.name }}.htpasswd"
+    _nginx_pki_dir: "/etc/pki/acme/{{ nginx_site.name }}"
+    _nginx_root: "/var/www/{{ nginx_site.name }}"
 
-- name: "Create {{item.host}} config"
+- name: Create {{ nginx_site.name }} certificate dir
+  file:
+    dest: '{{ _nginx_pki_dir }}'
+    state: directory
+    owner: '{{ acme_user }}'
+
+- name: "Create <{{ nginx_site.name }}> config"
   template:
-    dest: "{{nginx_sites_dir}}/{{item.host}}.conf"
+    dest: "{{ nginx_sites_dir }}/{{ nginx_site.name }}.conf"
     src: nginx-static-site.j2
+    backup: '{{ nginx_make_config_backup }}'
   notify: reload nginx
 
-- name: "Create {{item.host}} paswords"
-  template:
-    dest: "{{nginx_host_passwd_file}}"
-    src: nginx-htpasswd.j2
-  when: item.http_basic_auth is defined
-
-- name: Check fullchain exists
+- name: "Create <{{ nginx_site.name }}> root"
   file:
-    dest: /etc/pki/acme/{{item.host}}/fullchain.pem
-    state: file
-  when: item.request_acme_cert
-  register: has_chainfile
-  ignore_errors: yes
+    path: '{{ _nginx_root }}'
+    state: directory
 
-- debug:
-    var: has_chainfile
+- name: "Create <{{ nginx_site.name }}> index"
+  copy:
+    dest: '{{ _nginx_root }}/index.html'
+    content: 'Hello to {{ nginx_site.name }}'
+    force: no
 
-- name: Create dummy chainfile
-  shell: /etc/pki/tls/certs/make-dummy-cert /etc/pki/acme/{{item.host}}/fullchain.pem
-  when: item.request_acme_cert and has_chainfile|failed
+- name: "Create <{{ nginx_site.name }}> paswords"
+  template:
+    dest: "{{ _nginx_host_passwd_file }}"
+    src: nginx-htpasswd.j2
+  when: nginx_site.http_basic_auth is defined
+
+- name: Check certificate exists
+  stat:
+    path: '{{ _nginx_pki_dir }}/fullchain.pem'
   register: need_chainfile
 
 - name: Create dummy chainfile
-  shell: cp /etc/pki/acme/{{item.host}}/fullchain.pem /etc/pki/acme/{{item.host}}/key.pem
-  when: item.request_acme_cert and has_chainfile|failed
+  shell: /etc/pki/tls/certs/make-dummy-cert /etc/pki/acme/{{ nginx_site.name }}/fullchain.pem
+  args:
+    creates: '{{ _nginx_pki_dir }}/fullchain.pem'
+  become_user: '{{ acme_user }}'
+  become: yes
+  when: nginx_site.with_ssl and need_chainfile
+  register: need_chainfile
 
-- name: Restart nginx
+- name: Create dummy chainfile
+  shell: cp /etc/pki/acme/{{ nginx_site.name }}/fullchain.pem /etc/pki/acme/{{ nginx_site.name }}/key.pem
+  become_user: '{{ acme_user }}'
+  become: yes
+  when: need_chainfile|changed
+
+- name: "Make sure nginx can read temporary certificates"
+  file:
+    path: '{{ _nginx_pki_dir }}/{{item}}'
+    state: file
+    owner: '{{ acme_user }}'
+    group: '{{ nginx_group }}'
+    mode: '640'
+  with_items:
+      - fullchain.pem
+      - key.pem
+  when: need_chainfile|changed
+
+- name: Restart nginx with added config
   service:
     name: nginx
     state: restarted
   when: need_chainfile|changed
 
-- name: Delete wrong certificates
-  shell: rm *.pem -f
-  args:
-    chdir: /etc/pki/acme/{{item.host}}/
-    creates: account_key.json
-  when: item.request_acme_cert
+- name: "Delete test certs"
+  file:
+    path: '{{ _nginx_pki_dir }}/{{item}}'
+    state: absent
+  with_items:
+      - fullchain.pem
+      - cert.pem
+      - key.pem
+  when: need_chainfile|changed
 
-- name: Generate simp_le certificate
-  shell: simp_le -d {{item.host}}:/var/www -f key.pem -f fullchain.pem -f cert.pem -f account_key.json
+- name: Generate LE certificate
+  shell: >
+      "{{ acme_data_dir }}/acme.sh" --issue -d "{{ nginx_site.name }}" -w /var/www
   args:
-    chdir: /etc/pki/acme/{{item.host}}/
-    creates: /etc/pki/acme/{{item.host}}/account_key.json
+    chdir: '{{ _nginx_pki_dir }}'
+    creates: '{{ acme_data_dir }}/{{ nginx_site.name }}/fullchain.cer'
+  become_user: '{{ acme_user }}'
+  become: yes
   notify: reload nginx
-  when: item.request_acme_cert
+  when: nginx_site.request_acme_cert and nginx_site.with_ssl and need_chainfile
+
+- name: Install LE certificate
+  shell: >
+      "{{ acme_data_dir }}/acme.sh" --installcert -d "{{ nginx_site.name }}"
+      --certpath "{{ _nginx_pki_dir }}/cert.pem"
+      --keypath  "{{ _nginx_pki_dir }}/key.pem"
+      --capath  "{{ _nginx_pki_dir }}/ca.pem"
+      --fullchainpath "{{ _nginx_pki_dir }}/fullchain.pem"
+  args:
+    chdir: '{{ _nginx_pki_dir }}'
+    creates: '{{ _nginx_pki_dir }}/fullchain.pem'
+  become_user: '{{ acme_user }}'
+  become: yes
+  notify: restart nginx
+  when: nginx_site.request_acme_cert and nginx_site.with_ssl

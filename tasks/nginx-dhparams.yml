@@ -1,12 +1,6 @@
 ---
-- name: Check DH params exist
-  file:
-    dest: /etc/nginx/dhparams.pem
-    state: file
-  register: has_dhparams
-  ignore_errors: yes
-
 - name: Create new DH params
-  shell: openssl dhparam -out /etc/nginx/dhparams.pem 2048
+  shell:
+    creates=/etc/nginx/dhparams.pem
+    openssl dhparam -out /etc/nginx/dhparams.pem "{{ nginx_dhparam_bits }}"
   notify: reload nginx
-  when: has_dhparams|failed
