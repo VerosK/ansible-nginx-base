@@ -100,6 +100,7 @@
       --keypath  "{{ _nginx_pki_dir }}/key.pem"
       --capath  "{{ _nginx_pki_dir }}/ca.pem"
       --fullchainpath "{{ _nginx_pki_dir }}/fullchain.pem"
+      --reloadcmd "sudo systemctl reload nginx"
   args:
     chdir: '{{ _nginx_pki_dir }}'
     creates: '{{ _nginx_pki_dir }}/fullchain.pem'

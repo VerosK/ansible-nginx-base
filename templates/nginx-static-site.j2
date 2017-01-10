@@ -37,7 +37,6 @@ server {
         ssl_dhparam /etc/nginx/dhparams.pem;
 {% endif %}
 
-
 {% if 'http_basic_auth' in nginx_site %}
     # protected location
     auth_basic "{{ nginx_site.name }} password required";

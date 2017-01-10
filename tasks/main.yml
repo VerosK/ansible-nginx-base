@@ -1,10 +1,9 @@
 ---
-- name: Install nginx and simp_le to frontend host
+- name: Install nginx to frontend host
   yum:
     name: '{{item}}'
     state: installed
     enablerepo: epel
-    disable_gpg_check: true
   with_items:
     - nginx
 
@@ -36,6 +35,12 @@
   notify: reload nginx
   tags: default_server
 
+- name: Make sure empty config files exists
+  include: nginx_static_site_preflight.yml
+  with_items: '{{ nginx_sites }}'
+  loop_control:
+    loop_var: nginx_site
+
 - name: Create master cofnig
   template:
     dest: /etc/nginx/nginx.conf
@@ -46,12 +51,6 @@
   file:
     dest: /var/www/.well-known
     state: directory
-
-- name: Make sure empty config files exists
-  include: nginx_static_site_preflight.yml
-  with_items: '{{ nginx_sites }}'
-  loop_control:
-    loop_var: nginx_site
 
 - name: Create static sites
   include: nginx_static_site.yml

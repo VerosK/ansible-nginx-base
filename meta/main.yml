@@ -1,0 +1,13 @@
+---
+galaxy_info:
+  author: VerosK
+  description: This role sets-up nginx with Lets Encrypt certificates
+  license: BSD
+  min_ansible_version: 2.1
+  platforms:
+  - name: EL
+    versions:
+    - 7
+
+dependencies: 
+   - role: verosk.acme-sh
