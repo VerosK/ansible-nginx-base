@@ -38,14 +38,14 @@ server {
 {% endif %}
 
 {% if 'http_basic_auth' in nginx_site %}
-    # protected location
-    auth_basic "{{ nginx_site.name }} password required";
-    auth_basic_user_file {{ _nginx_host_passwd_file }};
+        # protected location
+        auth_basic "{{ nginx_site.name }} password required";
+        auth_basic_user_file {{ _nginx_host_passwd_file }};
 {% endif %}
 
 {% if nginx_site.root_config|default(None) %}
         # Using custom root_config
-{{ nginx_site.root_config }}
+{{ nginx_site.root_config|indent(8) }}
         # end of custom root_config
 {% else %}
         location / {
@@ -56,32 +56,31 @@ server {
                 client_max_body_size    128m;
         }
 {% endif %}
-    # Add acme-challenge for LetsEncrypt
-    location /.well-known/acme-challenge {
-        alias /var/www/.well-known/acme-challenge;
-    }
+        # Add acme-challenge for LetsEncrypt
+        location /.well-known/acme-challenge {
+            alias /var/www/.well-known/acme-challenge;
+        }
 
 }
 
 {% if nginx_site.with_ssl and not nginx_site.without_ssl|default(False) %}
 # create port 80 redirect
 server {
-    listen 80
-    {%- if nginx_site.is_default|default(False) %} default_server {% endif %};
+        listen 80
+        {%- if nginx_site.is_default|default(False) %} default_server {% endif %};
 
-    server_name {{ nginx_site.name }};
+        server_name {{ nginx_site.name }};
 
-    access_log  /var/log/nginx/{{nginx_site.name}}-80-access_log main;
-    error_log /var/log/nginx/{{nginx_site.name}}-80-error_log;
+        access_log  /var/log/nginx/{{nginx_site.name}}-80-access_log main;
+        error_log /var/log/nginx/{{nginx_site.name}}-80-error_log;
 
-    location / {
-        return 301 https://$host$request_uri;
-    }
+        location / {
+            return 301 https://$host$request_uri;
+        }
 
-    # Add acme-challenge for LetsEncrypt
-    location /.well-known/acme-challenge {
-        alias /var/www/.well-known/acme-challenge;
-    }
-
+        # Add acme-challenge for LetsEncrypt
+        location /.well-known/acme-challenge {
+            alias /var/www/.well-known/acme-challenge;
+        }
 }
 {% endif %}
