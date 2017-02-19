@@ -84,7 +84,7 @@
 
 - name: Generate LE certificate
   shell: >
-      "{{ acme_data_dir }}/acme.sh" --issue -d "{{ nginx_site.name }}" -w /var/www
+      "{{ acme_home_dir }}/acme.sh" --issue -d "{{ nginx_site.name }}" -w /var/www
   args:
     chdir: '{{ _nginx_pki_dir }}'
     creates: '{{ acme_data_dir }}/{{ nginx_site.name }}/fullchain.cer'
@@ -95,7 +95,7 @@
 
 - name: Install LE certificate
   shell: >
-      "{{ acme_data_dir }}/acme.sh" --installcert -d "{{ nginx_site.name }}"
+      "{{ acme_home_dir }}/acme.sh" --installcert -d "{{ nginx_site.name }}"
       --certpath "{{ _nginx_pki_dir }}/cert.pem"
       --keypath  "{{ _nginx_pki_dir }}/key.pem"
       --capath  "{{ _nginx_pki_dir }}/ca.pem"
