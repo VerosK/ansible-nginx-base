@@ -3,13 +3,13 @@
 # {{ ansible_managed }}
 #
 
-# {{ nginx_site.name}}
+# {{ nginx_site.name }}
 
 server {
 {% if nginx_site.with_ssl %}
         listen 443 ssl
         {%- if nginx_site.is_default|default(False) %} default_server {% endif %};
-{%  endif %}
+{% endif %}
 {% if not nginx_site.with_ssl or nginx_site.without_ssl|default(False) %}
         listen 80
         {%- if nginx_site.is_default|default(False) %} default_server {% endif %};
@@ -74,9 +74,13 @@ server {
         access_log  /var/log/nginx/{{nginx_site.name}}-80-access_log main;
         error_log /var/log/nginx/{{nginx_site.name}}-80-error_log;
 
+{% if nginx_site.http_root_config is defined%}
+{{ nginx_site.http_root_config|indent(8) }}
+{% else %}
         location / {
             return 301 https://$host$request_uri;
         }
+{% endif %}
 
         # Add acme-challenge for LetsEncrypt
         location /.well-known/acme-challenge {
@@ -84,3 +88,5 @@ server {
         }
 }
 {% endif %}
+
+{{ nginx_site.global_config|default('') }}
