@@ -1,17 +1,21 @@
 ---
-- name: Install nginx to frontend host
-  yum:
-    name: '{{item}}'
-    state: installed
-    enablerepo: epel
-  with_items:
-    - nginx
+- include_vars: '{{ ansible_os_family }}.yml'
+
+- set_fact:
+    nginx_user: '{{ nginx_user|default(_nginx_default_user) }}'
+
+- include: setup-RedHat.yml
+  when: ansible_os_family == "RedHat"
+
+- include: setup-Debian.yml
+  when: ansible_os_family == "Debian"
 
 - name: Enable ports 80 & 443
   firewalld: permanent=yes immediate=yes
              service={{ item }} zone=public state=enabled
   with_items: [ http, https ]
-  ignore_errors: yes
+  when: nginx_firewalld_enable
+  ignore_errors: '{{ nginx_firewalld_ignore_errors }}'
 
 - name: Create safe DH params
   include: nginx-dhparams.yml
@@ -44,7 +48,8 @@
 - name: Create master cofnig
   template:
     dest: /etc/nginx/nginx.conf
-    src: nginx-main.conf.j2
+    src: '{{ nginx_basic_template }}'
+    backup: true
   notify: reload nginx
 
 - name: Create .well-known directory

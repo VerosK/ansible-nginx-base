@@ -1,7 +1,7 @@
 # {{ ansible_managed }}
 
-user  nginx;
-worker_processes  1;
+user  {{  nginx_user }};
+worker_processes  {{  nginx_worker_process_count }};
 
 error_log  /var/log/nginx/error.log;
 #error_log  /var/log/nginx/error.log  notice;
@@ -10,7 +10,7 @@ error_log  /var/log/nginx/error.log;
 pid        /run/nginx.pid;
 
 events {
-    worker_connections  1024;
+    worker_connections  {{  nginx_worker_connections }};
 }
 
 http {

@@ -1,0 +1,8 @@
+---
+- name: Install nginx 
+  yum:
+    name: '{{item}}'
+    state: installed
+    enablerepo: '{{ nginx_yum_repo }}'
+  with_items: '{{ nginx_yum_packages }}'
+

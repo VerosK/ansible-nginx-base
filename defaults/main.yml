@@ -1,10 +1,31 @@
+
 nginx_sites_dir: /etc/nginx/sites.d
 nginx_htpasswd_dir: /etc/nginx/basic_auth.d
+
+nginx_deb_packages:
+   - nginx
+
+nginx_yum_repo: epel
+nginx_yum_packages:
+   - nginx
+
+nginx_yum_repo: epel
+
+nginx_worker_process_count: 1
+nginx_worker_connections: 768
+
+#
+#nginx_user: nobody
 
 nginx_dhparam_bits: 2048
 nginx_group: nginx
 
 nginx_make_config_backup: false
+
+nginx_firewalld_enable: true
+nginx_firewalld_ignore_errors: false
+
+nginx_basic_template: nginx-main.conf.j2
 
 nginx_sites: []
 #  - name: gitlab.toaster.cz
@@ -13,8 +34,8 @@ nginx_sites: []
 #    without_ssl: false
 #    request_acme_cert: true
 #    http_basic_auth:
-#        foo: $apr1$bIt0YLXq$ZNnbl5xVAZgA6Mz2.qa4i/        # wtf
-#        bar:  $apr1$bIt0YLXq$ZNnbl5xVAZgA6Mz2.qa4i/        # wtf
+#        foo: $apr1$bIt0YLXq$ZNnbl5xVAZgA6Mz2.qa4i/
+#        bar:  $apr1$bIt0YLXq$ZNnbl5xVAZgA6Mz2.qa4i/
 #    root_config: >
 #        location / {
 #                proxy_pass http://127.0.0.1:{{ gitlab_http_port }}/;

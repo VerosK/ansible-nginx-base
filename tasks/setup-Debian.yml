@@ -1,0 +1,7 @@
+---
+- name: Install nginx DEB
+  apt:
+    name: '{{item}}'
+    state: installed
+  with_items: '{{ nginx_deb_packages }}'
+

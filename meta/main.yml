@@ -8,6 +8,10 @@ galaxy_info:
   - name: EL
     versions:
     - 7
+  - name: Ubuntu
+    versions:
+    - xenial
+    - zesty
 
 dependencies: 
    - role: VerosK.acme-sh
