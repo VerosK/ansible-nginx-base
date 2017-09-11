@@ -9,8 +9,6 @@ nginx_yum_repo: epel
 nginx_yum_packages:
    - nginx
 
-nginx_yum_repo: epel
-
 nginx_worker_process_count: 1
 nginx_worker_connections: 768
 
