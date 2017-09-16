@@ -14,9 +14,10 @@ nginx_worker_connections: 768
 
 #
 #nginx_user: nobody
+#nginx_group: nobody
 
 nginx_dhparam_bits: 2048
-nginx_group: nginx
+
 
 nginx_make_config_backup: false
 

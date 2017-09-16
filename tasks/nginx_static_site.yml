@@ -40,19 +40,15 @@
   register: need_chainfile
 
 - name: Create dummy chainfile
-  shell: /etc/pki/tls/certs/make-dummy-cert /etc/pki/acme/{{ nginx_site.name }}/fullchain.pem
+  shell: |
+    openssl req -x509 -newkey rsa:4096 -keyout key.pem -out fullchain.pem -days 42 -nodes -subj '/C=XX/O=Dummy Certificate/CN={{ nginx_site.name }}'
   args:
+    chdir: '{{ _nginx_pki_dir }}'
     creates: '{{ _nginx_pki_dir }}/fullchain.pem'
   become_user: '{{ acme_user }}'
   become: yes
   when: nginx_site.with_ssl and need_chainfile
   register: need_chainfile
-
-- name: Create dummy chainfile
-  shell: cp /etc/pki/acme/{{ nginx_site.name }}/fullchain.pem /etc/pki/acme/{{ nginx_site.name }}/key.pem
-  become_user: '{{ acme_user }}'
-  become: yes
-  when: need_chainfile|changed
 
 - name: "Make sure nginx can read temporary certificates"
   file:

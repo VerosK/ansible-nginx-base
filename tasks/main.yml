@@ -3,6 +3,7 @@
 
 - set_fact:
     nginx_user: '{{ nginx_user|default(_nginx_default_user) }}'
+    nginx_group: '{{ nginx_group|default(_nginx_default_group) }}'
 
 - include: setup-RedHat.yml
   when: ansible_os_family == "RedHat"

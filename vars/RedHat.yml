@@ -1,1 +1,2 @@
 _nginx_default_user: nginx
+_nginx_default_group: nginx
