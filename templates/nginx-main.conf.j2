@@ -24,7 +24,7 @@ http {
 
     access_log  /var/log/nginx/access.log  main;
 
-    sendfile        on;
+    sendfile        {{ nginx_sendfile_enable|ternary("on","off") }};
     #tcp_nopush     on;
 
     #keepalive_timeout  0;

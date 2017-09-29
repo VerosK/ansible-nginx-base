@@ -25,6 +25,7 @@ nginx_firewalld_enable: true
 nginx_firewalld_ignore_errors: false
 
 nginx_basic_template: nginx-main.conf.j2
+nginx_sendfile_enable: true
 
 nginx_sites: []
 #  - name: gitlab.toaster.cz
