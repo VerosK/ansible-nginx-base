@@ -24,7 +24,7 @@ server {
         ssl_certificate      /etc/pki/acme/{{ nginx_site.name }}/fullchain.pem;
         ssl_certificate_key  /etc/pki/acme/{{ nginx_site.name }}/key.pem;
     {% else %}
-        ssl_certificate      /etc/pki/nginx/{{ nginx_site.name }}/cert.pem
+        ssl_certificate      /etc/pki/nginx/{{ nginx_site.name }}/cert.pem;
         ssl_certificate_key  /etc/pki/nginx/{{ nginx_site.name }}/key.pem;
     {% endif %}
 
