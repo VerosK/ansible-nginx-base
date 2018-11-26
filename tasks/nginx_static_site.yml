@@ -19,6 +19,7 @@
     dest: "{{ nginx_sites_dir }}/{{ nginx_site.name }}.conf"
     src: nginx-static-site.j2
     backup: '{{ nginx_make_config_backup }}'
+  register: _nginx_config
   notify: reload nginx
 
 - name: "Create <{{ nginx_site.name }}> root"
@@ -72,6 +73,7 @@
   service:
     name: nginx
     state: restarted
+  when: need_chainfile.changed or _nginx_config.changed
 
 - name: "<{{ nginx_site.name }}>: Delete test certs"
   file:
