@@ -4,6 +4,10 @@
     _nginx_pki_dir: "/etc/pki/acme/{{ nginx_site.name }}"
     _nginx_root: "/var/www/{{ nginx_site.name }}"
 
+- set_fact:
+    _nginx_pki_dir: "/etc/pki/nginx/{{ nginx_site.name }}"
+  when: not nginx_site.request_acme_cert
+
 - name: Create {{ nginx_site.name }} certificate dir
   file:
     dest: '{{ _nginx_pki_dir }}'
@@ -21,25 +25,27 @@
   file:
     path: '{{ _nginx_root }}'
     state: directory
+  when: nginx_site.request_acme_cert
 
 - name: "Create <{{ nginx_site.name }}> index"
   copy:
     dest: '{{ _nginx_root }}/index.html'
     content: 'Hello to {{ nginx_site.name }}'
     force: no
+  when: nginx_site.request_acme_cert
 
-- name: "Create <{{ nginx_site.name }}> paswords"
+- name: "<{{ nginx_site.name }}>: Create paswords"
   template:
     dest: "{{ _nginx_host_passwd_file }}"
     src: nginx-htpasswd.j2
   when: nginx_site.http_basic_auth is defined
 
-- name: Check certificate exists
+- name: "<{{ nginx_site.name }}>: Check certificate exists"
   stat:
     path: '{{ _nginx_pki_dir }}/fullchain.pem'
   register: need_chainfile
 
-- name: Create dummy chainfile
+- name: "<{{ nginx_site.name }}>: Create dummy chainfile"
   shell: |
     openssl req -x509 -newkey rsa:4096 -keyout key.pem -out fullchain.pem -days 42 -nodes -subj '/C=XX/O=Dummy Certificate/CN={{ nginx_site.name }}'
   args:
@@ -50,7 +56,7 @@
   when: nginx_site.with_ssl and need_chainfile
   register: need_chainfile
 
-- name: "Make sure nginx can read temporary certificates"
+- name: "<{{ nginx_site.name }}>: Make sure nginx can read temporary certificates"
   file:
     path: '{{ _nginx_pki_dir }}/{{item}}'
     state: file
@@ -60,25 +66,24 @@
   with_items:
       - fullchain.pem
       - key.pem
-  when: need_chainfile|changed
+  when: need_chainfile.changed
 
-- name: Restart nginx with added config
+- name: "<{{ nginx_site.name }}>: Restart nginx with added config"
   service:
     name: nginx
     state: restarted
-  when: need_chainfile|changed
 
-- name: "Delete test certs"
+- name: "<{{ nginx_site.name }}>: Delete test certs"
   file:
     path: '{{ _nginx_pki_dir }}/{{item}}'
     state: absent
   with_items:
       - fullchain.pem
       - cert.pem
-      - key.pem
-  when: need_chainfile|changed
+      - key.pemx
+  when: need_chainfile.changed and nginx_site.request_acme_cert
 
-- name: Generate LE certificate
+- name: "<{{ nginx_site.name }}>: Generate LE certificate"
   shell: >
       "{{ acme_home_dir }}/acme.sh" --issue -d "{{ nginx_site.name }}" -w /var/www
   args:
@@ -89,7 +94,7 @@
   notify: reload nginx
   when: nginx_site.request_acme_cert and nginx_site.with_ssl and need_chainfile
 
-- name: Install LE certificate
+- name: "<{{ nginx_site.name }}>: Install LE certificate"
   shell: >
       "{{ acme_home_dir }}/acme.sh" --installcert -d "{{ nginx_site.name }}"
       --certpath "{{ _nginx_pki_dir }}/cert.pem"
@@ -104,3 +109,5 @@
   become: yes
   notify: restart nginx
   when: nginx_site.request_acme_cert and nginx_site.with_ssl
+
+- meta: flush_handlers
