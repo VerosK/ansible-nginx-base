@@ -6,3 +6,16 @@
     enablerepo: '{{ nginx_yum_repo }}'
   with_items: '{{ nginx_yum_packages }}'
 
+- name: Enable SELinux
+  seboolean:
+      name: httpd_can_network_connect
+      persistent: yes
+      state: yes
+  when: nginx_sebool_enable_connect and ansible_selinux
+
+- name: Enable SELinux
+  seboolean:
+      name: httpd_can_network_connect
+      persistent:
+      state: yes
+  when: nginx_sebool_enable_connect and ansible_selinux

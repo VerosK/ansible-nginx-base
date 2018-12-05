@@ -82,12 +82,14 @@
   with_items:
       - fullchain.pem
       - cert.pem
-      - key.pemx
+      - key.pem
   when: need_chainfile.changed and nginx_site.request_acme_cert
 
 - name: "<{{ nginx_site.name }}>: Generate LE certificate"
   shell: >
-      "{{ acme_home_dir }}/acme.sh" --issue -d "{{ nginx_site.name }}" -w /var/www
+      "{{ acme_home_dir }}/acme.sh"
+      --issue -d "{{ nginx_site.name }}"
+      --standalone --httpport {{ nginx_acmesh_port }}
   args:
     chdir: '{{ _nginx_pki_dir }}'
     creates: '{{ acme_data_dir }}/{{ nginx_site.name }}/fullchain.cer'

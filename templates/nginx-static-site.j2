@@ -57,10 +57,9 @@ server {
         }
 {% endif %}
         # Add acme-challenge for LetsEncrypt
-        location /.well-known/acme-challenge {
-            alias /var/www/.well-known/acme-challenge;
+        location /.well-known/acme-challenge/ {
+                proxy_pass http://127.0.0.1:{{ nginx_acmesh_port }}/.well-known/acme-challenge/;
         }
-
 }
 
 {% if nginx_site.with_ssl and not nginx_site.without_ssl|default(False) %}
@@ -83,9 +82,10 @@ server {
 {% endif %}
 
         # Add acme-challenge for LetsEncrypt
-        location /.well-known/acme-challenge {
-            alias /var/www/.well-known/acme-challenge;
+        location /.well-known/acme-challenge/ {
+            proxy_pass http://127.0.0.1:{{ nginx_acmesh_port }}/.well-known/acme-challenge/;
         }
+
 }
 {% endif %}
 

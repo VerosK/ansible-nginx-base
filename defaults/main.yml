@@ -12,12 +12,14 @@ nginx_yum_packages:
 nginx_worker_process_count: 1
 nginx_worker_connections: 768
 
+nginx_acmesh_port: 5500
+nginx_sebool_enable_connect: true
+
 #
 #nginx_user: nobody
 #nginx_group: nobody
 
 nginx_dhparam_bits: 2048
-
 
 nginx_make_config_backup: false
 
