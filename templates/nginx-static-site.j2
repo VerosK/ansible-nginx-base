@@ -8,6 +8,7 @@
 server {
 {% if nginx_site.with_ssl %}
         listen 443 ssl
+        {%- if nginx_site.with_http2|default(True) %} http2 {% endif %}
         {%- if nginx_site.is_default|default(False) %} default_server {% endif %};
 {% endif %}
 {% if not nginx_site.with_ssl or nginx_site.without_ssl|default(False) %}

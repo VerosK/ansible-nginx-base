@@ -34,6 +34,7 @@ nginx_sites: []
 #    is_default: true
 #    with_ssl: true
 #    without_ssl: false
+#    without_http2: true # default
 #    request_acme_cert: true
 #    http_basic_auth:
 #        foo: $apr1$bIt0YLXq$ZNnbl5xVAZgA6Mz2.qa4i/
