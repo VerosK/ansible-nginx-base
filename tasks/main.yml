@@ -50,8 +50,9 @@
   template:
     dest: /etc/nginx/nginx.conf
     src: '{{ nginx_basic_template }}'
-    backup: true
+    backup: '{{ nginx_make_master_config_backup }}'
   notify: reload nginx
+  tags: nginx.master.config
 
 - name: Create .well-known directory
   file:
