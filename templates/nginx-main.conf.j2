@@ -34,6 +34,14 @@ http {
 
     index   index.html index.htm;
 
+
+    # log formats definition
+    {% for format in nginx_log_formats %}
+    log_format {{ format.name }} {%- if format.escape is defined %} escape={{ format.escape }}{% endif %}
+            {{ format.format|indent(16) }}
+            ;
+    {% endfor -%}
+
     # Load modular configuration files from the /etc/nginx/conf.d directory.
     # See http://nginx.org/en/docs/ngx_core_module.html#include
     # for more information.
