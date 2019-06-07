@@ -17,13 +17,6 @@ http {
     include       /etc/nginx/mime.types;
     default_type  application/octet-stream;
 
-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                      '$status $body_bytes_sent "$http_referer" '
-                      '"$http_user_agent" "$http_x_forwarded_for" '
-                      'TR:$request_time US:$upstream_response_time';
-
-    access_log  /var/log/nginx/access.log  main;
-
     sendfile        {{ nginx_sendfile_enable|ternary("on","off") }};
     #tcp_nopush     on;
 
@@ -52,6 +45,10 @@ http {
     {% for site in nginx_sites %}
     include {{ nginx_sites_dir }}/{{ site.name }}.conf ;
     {% endfor %}
+
+    {% if nginx_log_formats %}
+    access_log  /var/log/nginx/access.log  {{ nginx_log_formats[0].name }};
+    {% endif %}
 
 }
 # {{ ansible_managed }}
