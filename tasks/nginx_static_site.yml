@@ -112,6 +112,6 @@
   become_user: '{{ acme_user }}'
   become: yes
   notify: restart nginx
-  when: nginx_site.request_acme_cert and nginx_site.with_ssl
+  when: nginx_site.request_acme_cert and (nginx_site.with_ssl|default(True))
 
 - meta: flush_handlers
