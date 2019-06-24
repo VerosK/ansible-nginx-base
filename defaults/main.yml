@@ -33,6 +33,12 @@ nginx_firewalld_ignore_errors: false
 nginx_basic_template: nginx-main.conf.j2
 nginx_sendfile_enable: true
 
+nginx_acme_challenge: |
+        # Add acme-challenge for LetsEncrypt
+        location /.well-known/acme-challenge/ {
+                proxy_pass http://127.0.0.1:{{ nginx_acmesh_port }}/.well-known/acme-challenge/;
+        }
+
 nginx_log_formats:
    - name: main
      format: |
@@ -64,11 +70,12 @@ nginx_log_formats:
          'time:$request_time backend_time:$upstream_response_time status=$status host="$host" method="$request_method"'
 
 nginx_sites: []
+# nginx_sites: []
 #  - name: gitlab.toaster.cz
+#    aliases: [ www.gitlab.toaster.cz ]
 #    is_default: true
 #    with_ssl: true
 #    without_ssl: false
-#    without_http2: true # default
 #    request_acme_cert: true
 #    http_basic_auth:
 #        foo: $apr1$bIt0YLXq$ZNnbl5xVAZgA6Mz2.qa4i/
