@@ -6,12 +6,12 @@
 # {{ nginx_site.name }}
 
 server {
-{% if nginx_site.with_ssl %}
+{% if nginx_site.with_ssl|default(True) %}
         listen {{ nginx_site.https_port|default(443) }} ssl
         {%- if nginx_site.with_http2|default(True) %} http2 {% endif %}
         {%- if nginx_site.is_default|default(False) %} default_server {% endif %};
 {% endif %}
-{% if not nginx_site.with_ssl or nginx_site.without_ssl|default(False) %}
+{% if not nginx_site.with_ssl|default(True) or nginx_site.without_ssl|default(False) %}
         listen {{  nginx_site.http_port|default(80) }}
         {%- if nginx_site.is_default|default(False) %} default_server {% endif %};
 {% endif %}
@@ -20,7 +20,7 @@ server {
         access_log  /var/log/nginx/{{nginx_site.name}}-access_log main;
         error_log /var/log/nginx/{{nginx_site.name}}-error_log;
 
-{% if nginx_site.with_ssl %}        {#  FIXME: parametrize this #}
+{% if nginx_site.with_ssl|default(True) %}        {#  FIXME: parametrize this #}
     {% if nginx_site.request_acme_cert %}
         ssl_certificate      /etc/pki/acme/{{ nginx_site.name }}/fullchain.pem;
         ssl_certificate_key  /etc/pki/acme/{{ nginx_site.name }}/key.pem;
@@ -60,7 +60,7 @@ server {
         {{ nginx_acme_challenge }}
 }
 
-{% if nginx_site.with_ssl and not nginx_site.without_ssl|default(False) %}
+{% if nginx_site.with_ssl|default(True) and not nginx_site.without_ssl|default(False) %}
 # create port 80 redirect
 server {
         listen {{ nginx_site.http_port|default(80) }}
