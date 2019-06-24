@@ -21,7 +21,7 @@ server {
         error_log /var/log/nginx/{{nginx_site.name}}-error_log;
 
 {% if nginx_site.with_ssl|default(True) %}        {#  FIXME: parametrize this #}
-    {% if nginx_site.request_acme_cert %}
+    {% if nginx_site.request_acme_cert|default(True) %}
         ssl_certificate      /etc/pki/acme/{{ nginx_site.name }}/fullchain.pem;
         ssl_certificate_key  /etc/pki/acme/{{ nginx_site.name }}/key.pem;
     {% else %}

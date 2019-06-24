@@ -6,7 +6,7 @@
 
 - set_fact:
     _nginx_pki_dir: "/etc/pki/nginx/{{ nginx_site.name }}"
-  when: not nginx_site.request_acme_cert
+  when: not nginx_site.request_acme_cert|default(True)
 
 - name: Create {{ nginx_site.name }} certificate dir
   file:
@@ -26,16 +26,16 @@
   file:
     path: '{{ _nginx_root }}'
     state: directory
-  when: nginx_site.request_acme_cert
+  when: nginx_site.request_acme_cert|default(True)
 
 - name: "Create <{{ nginx_site.name }}> index"
   copy:
     dest: '{{ _nginx_root }}/index.html'
     content: 'Hello to {{ nginx_site.name }}'
     force: no
-  when: nginx_site.request_acme_cert
+  when: nginx_site.request_acme_cert|default(True)
 
-- name: "<{{ nginx_site.name }}>: Create paswords"
+- name: "<{{ nginx_site.name }}>: Create passwords"
   template:
     dest: "{{ _nginx_host_passwd_file }}"
     src: nginx-htpasswd.j2
@@ -54,7 +54,7 @@
     creates: '{{ _nginx_pki_dir }}/fullchain.pem'
   become_user: '{{ acme_user }}'
   become: yes
-  when: nginx_site.with_ssl and need_chainfile
+  when: nginx_site.with_ssl|default(True) and need_chainfile
   register: need_chainfile
 
 - name: "<{{ nginx_site.name }}>: Make sure nginx can read temporary certificates"
@@ -83,7 +83,7 @@
       - fullchain.pem
       - cert.pem
       - key.pem
-  when: need_chainfile.changed and nginx_site.request_acme_cert
+  when: need_chainfile.changed and nginx_site.request_acme_cert|default(True)
 
 - name: "<{{ nginx_site.name }}>: Generate LE certificate"
   shell: >
@@ -96,7 +96,7 @@
   become_user: '{{ acme_user }}'
   become: yes
   notify: reload nginx
-  when: nginx_site.request_acme_cert and nginx_site.with_ssl and need_chainfile
+  when: nginx_site.request_acme_cert|default(True) and nginx_site.with_ssl|default(True) and need_chainfile
 
 - name: "<{{ nginx_site.name }}>: Install LE certificate"
   shell: >
@@ -112,6 +112,6 @@
   become_user: '{{ acme_user }}'
   become: yes
   notify: restart nginx
-  when: nginx_site.request_acme_cert and (nginx_site.with_ssl|default(True))
+  when: nginx_site.request_acme_cert|default(True) and (nginx_site.with_ssl|default(True))
 
 - meta: flush_handlers
