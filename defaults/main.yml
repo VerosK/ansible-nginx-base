@@ -1,4 +1,3 @@
-
 nginx_sites_dir: /etc/nginx/sites.d
 nginx_htpasswd_dir: /etc/nginx/basic_auth.d
 
@@ -25,7 +24,6 @@ nginx_dhparam_bits: 2048
 nginx_make_master_config_backup: true
 # make backup of site configs?
 nginx_make_config_backup: false
-
 
 nginx_firewalld_enable: true
 nginx_firewalld_ignore_errors: false
