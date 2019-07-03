@@ -83,6 +83,8 @@ nginx_default_ssl_config: |
 
 nginx_sites: []
 # nginx_sites: []
+#  - name: example.site.cz
+#    root: /opt/example/html/
 #  - name: gitlab.toaster.cz
 #    aliases: [ www.gitlab.toaster.cz ]
 #    is_default: true

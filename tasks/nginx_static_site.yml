@@ -2,7 +2,8 @@
 - set_fact:
     _nginx_host_passwd_file: "{{nginx_htpasswd_dir}}/{{nginx_site.name }}.htpasswd"
     _nginx_pki_dir: "/etc/pki/acme/{{ nginx_site.name }}"
-    _nginx_root: "/var/www/{{ nginx_site.name }}"
+    _nginx_root: "{{ nginx_site.root|default('/var/www/' + nginx_site.name) }}"
+
 
 - set_fact:
     _nginx_pki_dir: "/etc/pki/nginx/{{ nginx_site.name }}"
