@@ -30,8 +30,10 @@ server {
         ssl_certificate      /etc/pki/nginx/{{ nginx_site.name }}/fullchain.pem;
         ssl_certificate_key  /etc/pki/nginx/{{ nginx_site.name }}/key.pem;
     {% endif %}
+    {% if nginx_site.ssl_config|default(False) %}
+        {{ nginx_site.ssl_config|indent(8) }}
+    {% endif %}
 
-{{ nginx_site.ssl_config|default(nginx_default_ssl_config)|indent(8) }}
 {% endif %}
 
 {% if 'http_basic_auth' in nginx_site %}
