@@ -65,8 +65,11 @@
   loop_control:
     loop_var: nginx_site
 
+
 - name: Enable nginx
   service:
     name: nginx
     enabled: yes
     state: started
+
+- meta: flush_handlers    

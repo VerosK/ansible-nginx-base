@@ -105,3 +105,7 @@ nginx_sites: []
 #
 #                client_max_body_size    128m;
 #        }
+
+
+# Restart when all files are changed
+nginx_less_restarts: true

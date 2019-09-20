@@ -116,4 +116,8 @@
   notify: restart nginx
   when: nginx_site.request_acme_cert|default(True) and (nginx_site.with_ssl|default(True))
 
-- meta: flush_handlers
+- name: Make sure we can restart nginx
+  command: systemctl reset-failed nginx
+
+- meta: flush_handlers 
+  when: not nginx_less_restarts|default(False)
