@@ -46,6 +46,7 @@
   stat:
     path: '{{ _nginx_pki_dir }}/fullchain.pem'
   register: need_chainfile
+  when: nginx_site.request_acme_cert|default(True)
 
 - name: "<{{ nginx_site.name }}>: Create dummy chainfile"
   shell: |
