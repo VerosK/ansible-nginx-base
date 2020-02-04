@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+#
+# This file is managed by Ansible. You manual changes are going to be eaten.
+
+{% for the_map in nginx_global_maps %}
+{% if the_map.comment is defined %}
+# map: {{  the_map.comment }}
+{% endif %}
+map {{ the_map.source }} {{ the_map.target_variable }} {
+{{ the_map.keys }}
+}
+
+{% endfor %}

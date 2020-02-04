@@ -22,6 +22,8 @@ nginx_dhparam_bits: 2048
 
 # make backup of master config?
 nginx_make_master_config_backup: true
+# backup maps config?
+nginx_make_map_config_backup: true
 # make backup of site configs?
 nginx_make_config_backup: false
 
@@ -109,3 +111,19 @@ nginx_sites: []
 
 # Restart when all files are changed
 nginx_less_restarts: true
+
+
+nginx_global_maps:
+  - comment: upstream_http_content_security_policy
+    target_variable: $upstream_http_content_security_policy
+    source: $content_security_policy
+    keys: |
+         "~."      $upstream_http_content_security_policy;
+         default    "frame-ancestors 'self'";
+
+  - comment: Override $upstream_http_x_frame_options
+    target_variable: $upstream_http_x_frame_options
+    source: $x_frame_options
+    keys: |
+         "~."       $upstream_http_x_frame_options;
+         default    "SAMEORIGIN";"
