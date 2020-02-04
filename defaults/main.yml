@@ -115,15 +115,15 @@ nginx_less_restarts: true
 
 nginx_global_maps:
   - comment: upstream_http_content_security_policy
-    target_variable: $upstream_http_content_security_policy
-    source: $content_security_policy
+    source: $upstream_http_content_security_policy
+    target_variable: $content_security_policy
     keys: |
          "~."      $upstream_http_content_security_policy;
          default    "frame-ancestors 'self'";
 
   - comment: Override $upstream_http_x_frame_options
-    target_variable: $upstream_http_x_frame_options
-    source: $x_frame_options
+    source: $upstream_http_x_frame_options
+    target_variable: $x_frame_options
     keys: |
          "~."       $upstream_http_x_frame_options;
-         default    "SAMEORIGIN";"
+         default    "SAMEORIGIN";

@@ -7,7 +7,7 @@
 # map: {{  the_map.comment }}
 {% endif %}
 map {{ the_map.source }} {{ the_map.target_variable }} {
-{{ the_map.keys }}
+    {{ the_map['keys']|indent(4)}}
 }
 
 {% endfor %}
