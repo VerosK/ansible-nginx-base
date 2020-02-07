@@ -1,10 +1,9 @@
 ---
 - name: Install nginx 
   yum:
-    name: '{{item}}'
+    name: '{{ nginx_yum_packages }}'
     state: installed
     enablerepo: '{{ nginx_yum_repo }}'
-  with_items: '{{ nginx_yum_packages }}'
 
 - name: Enable SELinux
   seboolean:
