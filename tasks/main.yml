@@ -12,9 +12,13 @@
   when: ansible_os_family == "Debian"
 
 - name: Enable ports 80 & 443
-  firewalld: permanent=yes immediate=yes
-             service={{ item }} zone=public state=enabled
-  with_items: [ http, https ]
+  firewalld:
+    service: '{{ item }}'
+    zone: public
+    state: enabled
+    permanent: true
+    immediate: true
+  with_items: [http, https]
   when: nginx_firewalld_enable
   ignore_errors: '{{ nginx_firewalld_ignore_errors }}'
 
@@ -74,11 +78,10 @@
   loop_control:
     loop_var: nginx_site
 
-
 - name: Enable nginx
   service:
     name: nginx
-    enabled: yes
+    enabled: true
     state: started
 
-- meta: flush_handlers    
+- meta: flush_handlers

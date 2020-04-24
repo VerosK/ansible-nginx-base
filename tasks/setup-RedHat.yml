@@ -1,5 +1,5 @@
 ---
-- name: Install nginx 
+- name: Install nginx
   yum:
     name: '{{ nginx_yum_packages }}'
     state: installed
@@ -7,14 +7,14 @@
 
 - name: Enable SELinux
   seboolean:
-      name: httpd_can_network_connect
-      persistent: yes
-      state: yes
+    name: httpd_can_network_connect
+    persistent: true
+    state: true
   when: nginx_sebool_enable_connect and ansible_selinux
 
 - name: Enable SELinux
   seboolean:
-      name: httpd_can_network_connect
-      persistent:
-      state: yes
+    name: httpd_can_network_connect
+    persistent:
+    state: true
   when: nginx_sebool_enable_connect and ansible_selinux

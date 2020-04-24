@@ -1,9 +1,10 @@
 ---
+# yamllint disable rule:line-length
+
 - set_fact:
     _nginx_host_passwd_file: "{{nginx_htpasswd_dir}}/{{nginx_site.name }}.htpasswd"
     _nginx_pki_dir: "/etc/pki/acme/{{ nginx_site.name }}"
     _nginx_root: "{{ nginx_site.root|default('/var/www/' + nginx_site.name) }}"
-
 
 - set_fact:
     _nginx_pki_dir: "/etc/pki/nginx/{{ nginx_site.name }}"
@@ -33,7 +34,7 @@
   copy:
     dest: '{{ _nginx_root }}/index.html'
     content: 'Hello to {{ nginx_site.name }}'
-    force: no
+    force: false
   when: nginx_site.request_acme_cert|default(True)
 
 - name: "<{{ nginx_site.name }}>: Create passwords"
@@ -55,7 +56,7 @@
     chdir: '{{ _nginx_pki_dir }}'
     creates: '{{ _nginx_pki_dir }}/fullchain.pem'
   become_user: '{{ acme_user }}'
-  become: yes
+  become: true
   when: nginx_site.with_ssl|default(True) and need_chainfile
   register: need_chainfile
 
@@ -67,8 +68,8 @@
     group: '{{ nginx_group }}'
     mode: '640'
   with_items:
-      - fullchain.pem
-      - key.pem
+    - fullchain.pem
+    - key.pem
   when: need_chainfile.changed
 
 - name: "<{{ nginx_site.name }}>: Restart nginx with added config"
@@ -82,9 +83,9 @@
     path: '{{ _nginx_pki_dir }}/{{item}}'
     state: absent
   with_items:
-      - fullchain.pem
-      - cert.pem
-      - key.pem
+    - fullchain.pem
+    - cert.pem
+    - key.pem
   when: need_chainfile.changed and nginx_site.request_acme_cert|default(True)
 
 - name: "<{{ nginx_site.name }}>: Generate LE certificate"
@@ -96,7 +97,7 @@
     chdir: '{{ _nginx_pki_dir }}'
     creates: '{{ acme_data_dir }}/{{ nginx_site.name }}/fullchain.cer'
   become_user: '{{ acme_user }}'
-  become: yes
+  become: true
   notify: reload nginx
   when: nginx_site.request_acme_cert|default(True) and nginx_site.with_ssl|default(True) and need_chainfile
 
@@ -112,7 +113,7 @@
     chdir: '{{ _nginx_pki_dir }}'
     creates: '{{ _nginx_pki_dir }}/fullchain.pem'
   become_user: '{{ acme_user }}'
-  become: yes
+  become: true
   notify: restart nginx
   when: nginx_site.request_acme_cert|default(True) and (nginx_site.with_ssl|default(True))
 
@@ -120,5 +121,5 @@
   command: systemctl reset-failed nginx
   changed_when: false
 
-- meta: flush_handlers 
+- meta: flush_handlers
   when: not nginx_less_restarts|default(False)

@@ -1,17 +1,22 @@
 ---
 galaxy_info:
   author: VerosK
+  role_name: nginx
   description: This role sets-up nginx with Lets Encrypt certificates
   license: BSD
-  min_ansible_version: 2.1
+  min_ansible_version: 2.6
   platforms:
-  - name: EL
-    versions:
-    - 7
-  - name: Ubuntu
-    versions:
-    - xenial
-    - zesty
+    - name: EL
+      versions:
+        - 7
+    - name: Ubuntu
+      versions:
+        - xenial
+        - zesty
+    - name: Debian
+      versions:
+        - jessie
+        - stretch
 
-dependencies: 
-   - role: VerosK.acme-sh
+dependencies:
+  - role: VerosK.acme-sh

@@ -1,2 +1,3 @@
+---
 _nginx_default_user: www-data
 _nginx_default_group: www-data

@@ -1,12 +1,13 @@
+---
 nginx_sites_dir: /etc/nginx/sites.d
 nginx_htpasswd_dir: /etc/nginx/basic_auth.d
 
 nginx_deb_packages:
-   - nginx
+  - nginx
 
 nginx_yum_repo: epel
 nginx_yum_packages:
-   - nginx
+  - nginx
 
 nginx_worker_process_count: 1
 nginx_worker_connections: 768
@@ -14,9 +15,8 @@ nginx_worker_connections: 768
 nginx_acmesh_port: 5500
 nginx_sebool_enable_connect: true
 
-#
-#nginx_user: nobody
-#nginx_group: nobody
+# nginx_user: nobody
+# nginx_group: nobody
 
 nginx_dhparam_bits: 2048
 
@@ -33,41 +33,44 @@ nginx_firewalld_ignore_errors: false
 nginx_basic_template: nginx-main.conf.j2
 nginx_sendfile_enable: true
 
+
+# yamllint disable rule:line-length
+
 nginx_acme_challenge: |
-        # Add acme-challenge for LetsEncrypt
-        location /.well-known/acme-challenge/ {
-                proxy_pass http://127.0.0.1:{{ nginx_acmesh_port }}/.well-known/acme-challenge/;
-        }
+  # Add acme-challenge for LetsEncrypt
+  location /.well-known/acme-challenge/ {
+          proxy_pass http://127.0.0.1:{{ nginx_acmesh_port }}/.well-known/acme-challenge/;
+  }
 
 nginx_log_formats:
-   - name: main
-     format: |
-         '$remote_addr - $remote_user [$time_local] "$request" '
-         '$status $body_bytes_sent "$http_referer" '
-         '"$http_user_agent" "$http_x_forwarded_for" '
-         'TR:$request_time US:$upstream_response_time'
-   - name: json_combined
-     escape: json
-     format: |
-         '{ "time_local": "$time_local", '
-         '"remote_addr": "$remote_addr", '
-         '"remote_user": "$remote_user", '
-         '"request": "$request", '
-         '"method": "$request_method", '
-         '"request_uri": "$request_uri", '
-         '"uri": "$uri", '
-         '"http_protocol": "$server_protocol", '
-         '"status": $status, '
-         '"body_bytes_sent": $body_bytes_sent, '
-         '"content_type": "$sent_http_content_type", '
-         '"request_time": $request_time, '
-         '"backend_time": "$upstream_response_time", '
-         '"http_host": "$http_host", '
-         '"http_referrer": "$http_referer", '
-         '"http_user_agent": "$http_user_agent" }'
-   - name: prometheus
-     format: |
-         'time:$request_time backend_time:$upstream_response_time status=$status host="$host" method="$request_method"'
+  - name: main
+    format: |
+      '$remote_addr - $remote_user [$time_local] "$request" '
+      '$status $body_bytes_sent "$http_referer" '
+      '"$http_user_agent" "$http_x_forwarded_for" '
+      'TR:$request_time US:$upstream_response_time'
+  - name: json_combined
+    escape: json
+    format: |
+      '{ "time_local": "$time_local", '
+      '"remote_addr": "$remote_addr", '
+      '"remote_user": "$remote_user", '
+      '"request": "$request", '
+      '"method": "$request_method", '
+      '"request_uri": "$request_uri", '
+      '"uri": "$uri", '
+      '"http_protocol": "$server_protocol", '
+      '"status": $status, '
+      '"body_bytes_sent": $body_bytes_sent, '
+      '"content_type": "$sent_http_content_type", '
+      '"request_time": $request_time, '
+      '"backend_time": "$upstream_response_time", '
+      '"http_host": "$http_host", '
+      '"http_referrer": "$http_referer", '
+      '"http_user_agent": "$http_user_agent" }'
+  - name: prometheus
+    format: |
+      'time:$request_time backend_time:$upstream_response_time status=$status host="$host" method="$request_method"'
 
 nginx_default_ssl_config: |
   # TLS config from
@@ -118,12 +121,12 @@ nginx_global_maps:
     source: $upstream_http_content_security_policy
     target_variable: $content_security_policy
     keys: |
-         "~."      $upstream_http_content_security_policy;
-         default    "frame-ancestors 'self'";
+      "~."      $upstream_http_content_security_policy;
+      default    "frame-ancestors 'self'";
 
   - comment: Override $upstream_http_x_frame_options
     source: $upstream_http_x_frame_options
     target_variable: $x_frame_options
     keys: |
-         "~."       $upstream_http_x_frame_options;
-         default    "SAMEORIGIN";
+      "~."       $upstream_http_x_frame_options;
+      default    "SAMEORIGIN";
