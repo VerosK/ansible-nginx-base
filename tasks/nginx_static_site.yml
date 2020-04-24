@@ -1,12 +1,14 @@
 ---
 # yamllint disable rule:line-length
 
-- set_fact:
-    _nginx_host_passwd_file: "{{nginx_htpasswd_dir}}/{{nginx_site.name }}.htpasswd"
+- name: Prepare paths
+  set_fact:
+    _nginx_host_passwd_file: "{{ nginx_htpasswd_dir }}/{{ nginx_site.name }}.htpasswd"
     _nginx_pki_dir: "/etc/pki/acme/{{ nginx_site.name }}"
     _nginx_root: "{{ nginx_site.root|default('/var/www/' + nginx_site.name) }}"
 
-- set_fact:
+- name: Prepare paths
+  set_fact:
     _nginx_pki_dir: "/etc/pki/nginx/{{ nginx_site.name }}"
   when: not nginx_site.request_acme_cert|default(True)
 
@@ -61,8 +63,8 @@
   register: need_chainfile
 
 - name: "<{{ nginx_site.name }}>: Make sure nginx can read temporary certificates"
-  file:
-    path: '{{ _nginx_pki_dir }}/{{item}}'
+  file:  # noqa 503
+    path: '{{ _nginx_pki_dir }}/{{ item }}'
     state: file
     owner: '{{ acme_user }}'
     group: '{{ nginx_group }}'
@@ -73,20 +75,20 @@
   when: need_chainfile.changed
 
 - name: "<{{ nginx_site.name }}>: Restart nginx with added config"
-  service:
+  service:  # noqa 503
     name: nginx
     state: restarted
-  when: need_chainfile.changed or _nginx_config.changed
+  when: need_chainfile is changed or _nginx_config is changed
 
 - name: "<{{ nginx_site.name }}>: Delete test certs"
-  file:
-    path: '{{ _nginx_pki_dir }}/{{item}}'
+  file:  # noqa 503
+    path: '{{ _nginx_pki_dir }}/{{ item }}'
     state: absent
   with_items:
     - fullchain.pem
     - cert.pem
     - key.pem
-  when: need_chainfile.changed and nginx_site.request_acme_cert|default(True)
+  when: need_chainfile is changed and nginx_site.request_acme_cert|default(True)
 
 - name: "<{{ nginx_site.name }}>: Generate LE certificate"
   shell: >
@@ -118,7 +120,7 @@
   when: nginx_site.request_acme_cert|default(True) and (nginx_site.with_ssl|default(True))
 
 - name: Make sure we can restart nginx
-  command: systemctl reset-failed nginx
+  command: systemctl reset-failed nginx  # noqa 303
   changed_when: false
 
 - meta: flush_handlers

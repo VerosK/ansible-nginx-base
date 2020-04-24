@@ -1,14 +1,18 @@
 ---
-- include_vars: '{{ ansible_os_family }}.yml'
+- name: Lookup variables
+  include_vars: '{{ ansible_os_family }}.yml'
 
-- set_fact:
+- name: Set fact
+  set_fact:
     nginx_user: '{{ nginx_user|default(_nginx_default_user) }}'
     nginx_group: '{{ nginx_group|default(_nginx_default_group) }}'
 
-- include: setup-RedHat.yml
+- name: Setup RedHat packages
+  include: setup-RedHat.yml
   when: ansible_os_family == "RedHat"
 
-- include: setup-Debian.yml
+- name: Setup Debian packages
+  include: setup-Debian.yml
   when: ansible_os_family == "Debian"
 
 - name: Enable ports 80 & 443

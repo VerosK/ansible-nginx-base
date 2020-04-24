@@ -1,7 +1,6 @@
 ---
 - name: Create new DH params
-  shell:
-    openssl dhparam -out /etc/nginx/dhparams.pem "{{ nginx_dhparam_bits }}"
-  args:
-    creates: /etc/nginx/dhparams.pem
+  openssl_dhparam:
+    path: /etc/nginx/dhparams.pem
+    size: "{{ nginx_dhparam_bits }}"
   notify: reload nginx
