@@ -2,6 +2,9 @@
 - name: Converge
   hosts: all
 
+  vars_files:
+    - vars/empty_site.yml
+
   pre_tasks:
     - name: Add gpg on Ubuntu 18.04
       apt:
@@ -20,7 +23,6 @@
       when:
         - ansible_distribution == 'Debian'
         - ansible_distribution_major_version|int >= 9
-
 
   roles:
     - role: VerosK.nginx
