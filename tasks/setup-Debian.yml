@@ -2,4 +2,4 @@
 - name: Install nginx DEB
   apt:
     name: '{{ nginx_deb_packages }}'
-    state: installed
+    state: present
