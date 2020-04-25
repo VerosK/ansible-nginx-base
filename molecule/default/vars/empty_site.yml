@@ -4,6 +4,7 @@
 nginx_dhparam_bits: 512
 
 # ignore errors on firewalld (we have no firewalld in CI )
+nginx_firewalld_enable: false
 nginx_firewalld_ignore_errors: false
 
 # do not touch selinux in CI
