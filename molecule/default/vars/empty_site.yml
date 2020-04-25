@@ -6,6 +6,9 @@ nginx_dhparam_bits: 512
 # ignore errors on firewalld (we have no firewalld in CI )
 nginx_firewalld_ignore_errors: false
 
+# do not touch selinux in CI
+nginx_sebool_enable_connect: false
+
 nginx_sites:
   - name: ci-test
     root: /opt/nginx/ci-test-root
