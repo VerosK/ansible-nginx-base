@@ -1,10 +1,10 @@
+---
 
 # be faster in CI
 nginx_dhparam_bits: 512
 
 # ignore errors on firewalld (we have no firewalld in CI )
 nginx_firewalld_ignore_errors: false
-
 
 nginx_sites:
   - name: ci-test
