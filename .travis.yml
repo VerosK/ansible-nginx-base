@@ -18,7 +18,7 @@ install:
 before_script:
   # Use actual Ansible Galaxy role name for the project directory.
   - cd ../
-  - mv ansible-role-$ROLE_NAME VerosK.$ROLE_NAME
+  - mv ansible-nginx-base VerosK.$ROLE_NAME
   - cd VerosK.$ROLE_NAME
 
 script:
