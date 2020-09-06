@@ -33,12 +33,14 @@
   file:
     dest: "{{ nginx_sites_dir }}"
     state: directory
+    mode: '{{ nginx_config_dir_permissions }}'
   when: nginx_sites_dir is defined
 
 - name: Create passwords_dir
   file:
     dest: "{{ nginx_htpasswd_dir }}"
     state: directory
+    mode: '{{ nginx_config_dir_permissions }}'
   when: nginx_htpasswd_dir is defined
 
 - name: Drop default config
@@ -59,6 +61,7 @@
     dest: /etc/nginx/nginx.conf
     src: '{{ nginx_basic_template }}'
     backup: '{{ nginx_make_master_config_backup }}'
+    mode: '{{ nginx_config_permissions }}'
   notify: reload nginx
   tags: nginx.master.config
 
@@ -67,6 +70,7 @@
     src: nginx-maps.conf.j2
     dest: /etc/nginx/conf.d/maps.conf
     backup: '{{ nginx_make_map_config_backup }}'
+    mode: '{{ nginx_config_permissions }}'
   notify: reload nginx
   when: nginx_global_maps
   tags: nginx-maps
@@ -75,6 +79,7 @@
   file:
     dest: /var/www/.well-known
     state: directory
+    mode: '0755'
 
 - name: Create static sites
   include: nginx_static_site.yml
