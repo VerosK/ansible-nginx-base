@@ -1,7 +1,7 @@
 ---
 nginx_sites_dir: /etc/nginx/sites.d
 nginx_htpasswd_dir: /etc/nginx/basic_auth.d
-nginx_config_permissions: 0744
+nginx_config_permissions: 0644
 nginx_config_dir_permissions: 0755
 
 nginx_deb_packages:
