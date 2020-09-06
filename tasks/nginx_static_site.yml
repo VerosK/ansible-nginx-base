@@ -17,12 +17,14 @@
     dest: '{{ _nginx_pki_dir }}'
     state: directory
     owner: '{{ acme_user }}'
+    mode: '{{ nginx_config_dir_permissions }}'
 
 - name: "Create <{{ nginx_site.name }}> config"
   template:
     dest: "{{ nginx_sites_dir }}/{{ nginx_site.name }}.conf"
     src: nginx-static-site.j2
     backup: '{{ nginx_make_config_backup }}'
+    mode: '{{ nginx_config_permissions }}'
   register: _nginx_config
   notify: reload nginx
 
@@ -30,12 +32,14 @@
   file:
     path: '{{ _nginx_root }}'
     state: directory
+    mode: '{{ nginx_config_dir_permissions }}'
   when: nginx_site.request_acme_cert|default(True)
 
 - name: "Create <{{ nginx_site.name }}> index"
   copy:
     dest: '{{ _nginx_root }}/index.html'
     content: 'Hello to {{ nginx_site.name }}'
+    mode: 0744
     force: false
   when: nginx_site.request_acme_cert|default(True)
 
@@ -43,6 +47,7 @@
   template:
     dest: "{{ _nginx_host_passwd_file }}"
     src: nginx-htpasswd.j2
+    mode: '{{ nginx_config_permissions }}'
   when: nginx_site.http_basic_auth is defined
 
 - name: "<{{ nginx_site.name }}>: Check certificate exists"
