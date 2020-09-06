@@ -19,4 +19,4 @@ galaxy_info:
         - stretch
 
 dependencies:
-  - role: VerosK.acme-sh
+  - role: VerosK.acme_sh
