@@ -16,7 +16,8 @@ server {
         {%- if nginx_site.is_default|default(False) %} default_server {% endif %};
 {% endif %}
 
-        server_name {{ nginx_site.name }};
+        server_name {{ nginx_site.name }}
+        {%- if 'aliases' in nginx_site %}{% for alias in nginx_site.aliases %} {{ alias }}{% endfor %}{% endif %};
 {% if nginx_site.default_log|default(True) %}
         access_log  /var/log/nginx/{{nginx_site.name}}-access_log main;
         error_log /var/log/nginx/{{nginx_site.name}}-error_log;
@@ -64,7 +65,8 @@ server {
         listen {{ nginx_site.http_port|default(80) }}
         {%- if nginx_site.is_default|default(False) %} default_server {% endif %};
 
-        server_name {{ nginx_site.name }};
+        server_name {{ nginx_site.name }}
+        {%- if 'aliases' in nginx_site %}{% for alias in nginx_site.aliases %} {{ alias }}{% endfor %}{% endif %};
 
         access_log  /var/log/nginx/{{nginx_site.name}}-80-access_log main;
         error_log /var/log/nginx/{{nginx_site.name}}-80-error_log;
