@@ -12,6 +12,10 @@
     _nginx_pki_dir: "/etc/pki/nginx/{{ nginx_site.name }}"
   when: not nginx_site.request_acme_cert|default(True)
 
+- name: Make sure we can restart nginx (reset failed count)
+  command: systemctl reset-failed nginx  # noqa 303
+  changed_when: false
+
 - name: Create {{ nginx_site.name }} certificate dir
   file:
     dest: '{{ _nginx_pki_dir }}'
@@ -124,10 +128,6 @@
   notify: restart nginx
   when: nginx_site.request_acme_cert|default(True) and (nginx_site.with_ssl|default(True))
 
-- name: Make sure we can restart nginx (reset failed count)
-  command: systemctl reset-failed nginx  # noqa 303
-  changed_when: false
-  when: not nginx_less_restarts|default(False)
 
 - meta: flush_handlers
   when: not nginx_less_restarts|default(False)
