@@ -112,6 +112,8 @@
   notify: reload nginx
   when: nginx_site.request_acme_cert|default(True) and nginx_site.with_ssl|default(True) and need_chainfile
 
+- meta: flush_handlers
+
 - name: "<{{ nginx_site.name }}>: Install LE certificate"
   shell: >
       "{{ acme_home_dir }}/acme.sh" --installcert -d "{{ nginx_site.name }}"
