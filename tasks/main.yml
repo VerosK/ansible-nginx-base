@@ -27,7 +27,7 @@
   ignore_errors: '{{ nginx_firewalld_ignore_errors }}'
 
 - name: Create safe DH params
-  include: nginx-dhparams.yml
+  include_tasks: nginx-dhparams.yml
 
 - name: Create sites.d
   file:
