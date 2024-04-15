@@ -51,7 +51,7 @@
   tags: default_server
 
 - name: Make sure empty config files exists
-  include: nginx_static_site_preflight.yml
+  include_tasks: nginx_static_site_preflight.yml
   with_items: '{{ nginx_sites }}'
   loop_control:
     loop_var: nginx_site
