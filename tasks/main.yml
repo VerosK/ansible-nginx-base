@@ -8,11 +8,11 @@
     nginx_group: '{{ nginx_group|default(_nginx_default_group) }}'
 
 - name: Setup RedHat packages
-  include: setup-RedHat.yml
+  include_tasks: setup-RedHat.yml
   when: ansible_os_family == "RedHat"
 
 - name: Setup Debian packages
-  include: setup-Debian.yml
+  include_tasks: setup-Debian.yml
   when: ansible_os_family == "Debian"
 
 - name: Enable ports 80 & 443
@@ -82,7 +82,7 @@
     mode: '0755'
 
 - name: Create static sites
-  include: nginx_static_site.yml
+  include_tasks: nginx_static_site.yml
   with_items: '{{ nginx_sites }}'
   loop_control:
     loop_var: nginx_site
