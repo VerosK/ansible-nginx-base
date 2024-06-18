@@ -1,11 +1,16 @@
 ---
 # yamllint disable rule:line-length
 
+- name: Prepare path suffix
+  set_fact:
+    _nginx_config_suffix: "{{ nginx_site.config_suffix|default('') }}"
+
 - name: Prepare paths
   set_fact:
-    _nginx_host_passwd_file: "{{ nginx_htpasswd_dir }}/{{ nginx_site.name }}.htpasswd"
+    _nginx_host_passwd_file: "{{ nginx_htpasswd_dir }}/{{ nginx_site.name }}{{ _nginx_config_suffix }}.htpasswd"
     _nginx_pki_dir: "/etc/pki/acme/{{ nginx_site.name }}"
-    _nginx_root: "{{ nginx_site.root|default('/var/www/' + nginx_site.name) }}"
+    _nginx_root: "{{ nginx_site.root|default('/var/www/' + nginx_site.name + _nginx_config_suffix) }}"
+
 
 - name: Prepare paths
   set_fact:
@@ -25,7 +30,7 @@
 
 - name: "Create <{{ nginx_site.name }}> config"
   template:
-    dest: "{{ nginx_sites_dir }}/{{ nginx_site.name }}.conf"
+    dest: "{{ nginx_sites_dir }}/{{ nginx_site.name }}{{ _nginx_config_suffix }}.conf"
     src: nginx-static-site.j2
     backup: '{{ nginx_make_config_backup }}'
     mode: '{{ nginx_config_permissions }}'

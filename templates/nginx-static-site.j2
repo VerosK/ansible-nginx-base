@@ -3,7 +3,8 @@
 # {{ ansible_managed }}
 #
 
-# {{ nginx_site.name }}
+# site:          {{ nginx_site.name }}
+# config_suffix: {{ nginx_site.config_suffix|default('') }}
 
 server {
 {% if nginx_site.with_ssl|default(True) %}
@@ -19,8 +20,8 @@ server {
         server_name {{ nginx_site.name }}
         {%- if 'aliases' in nginx_site %}{% for alias in nginx_site.aliases %} {{ alias }}{% endfor %}{% endif %};
 {% if nginx_site.default_log|default(True) %}
-        access_log  /var/log/nginx/{{nginx_site.name}}-access_log main;
-        error_log /var/log/nginx/{{nginx_site.name}}-error_log;
+        access_log  /var/log/nginx/{{nginx_site.name}}{{ nginx_site.config_suffix|default('') }}-access_log main;
+        error_log /var/log/nginx/{{nginx_site.name}}{{ nginx_site.config_suffix|default('') }}-error_log;
 {% endif %}
 
 {% if nginx_site.with_ssl|default(True) %}        {#  FIXME: parametrize this #}
@@ -68,8 +69,8 @@ server {
         server_name {{ nginx_site.name }}
         {%- if 'aliases' in nginx_site %}{% for alias in nginx_site.aliases %} {{ alias }}{% endfor %}{% endif %};
 
-        access_log  /var/log/nginx/{{nginx_site.name}}-80-access_log main;
-        error_log /var/log/nginx/{{nginx_site.name}}-80-error_log;
+        access_log  /var/log/nginx/{{nginx_site.name}}{{ nginx_site.config_suffix|default('') }}-80-access_log main;
+        error_log /var/log/nginx/{{nginx_site.name}}{{ nginx_site.config_suffix|default('') }}-80-error_log;
 
 {% if nginx_site.http_root_config is defined%}
 {{ nginx_site.http_root_config|indent(8) }}

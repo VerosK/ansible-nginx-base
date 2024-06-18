@@ -46,7 +46,7 @@ http {
 
     # Load ansible configured files
     {% for site in nginx_sites %}
-    include {{ nginx_sites_dir }}/{{ site.name }}.conf ;
+    include {{ nginx_sites_dir }}/{{ site.name }}{{ site.config_suffix|default('') }}.conf ;
     {% endfor %}
 
     {% if nginx_log_formats %}

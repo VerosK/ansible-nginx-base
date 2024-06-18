@@ -1,7 +1,7 @@
 ---
 - name: "Make sure <{{ nginx_site.name }}> config exists"
   copy:
-    dest: "{{ nginx_sites_dir }}/{{ nginx_site.name }}.conf"
+    dest: "{{ nginx_sites_dir }}/{{ nginx_site.name }}{{ nginx_site.config_suffix|default('') }}.conf"
     content: "# This is dummy file. It will be overwritten in few minutes\n"
     mode: '{{ nginx_config_permissions }}'
     force: false     # don't overwrite the file when exists
