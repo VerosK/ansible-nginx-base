@@ -11,7 +11,6 @@
     _nginx_pki_dir: "/etc/pki/acme/{{ nginx_site.name }}"
     _nginx_root: "{{ nginx_site.root|default('/var/www/' + nginx_site.name + _nginx_config_suffix) }}"
 
-
 - name: Prepare paths
   set_fact:
     _nginx_pki_dir: "/etc/pki/nginx/{{ nginx_site.name }}"
@@ -104,6 +103,22 @@
     - key.pem
   when: need_chainfile is changed and nginx_site.request_acme_cert|default(True)
 
+- name: Check certificate dir existence
+  set_fact:
+    _ecc_dir:  '{{ acme_data_dir }}/{{ nginx_site.name }}_ecc'
+    _rsa_dir:  '{{ acme_data_dir }}/{{ nginx_site.name }}'
+
+- name: Check ECC dir existence
+  stat:
+    path: '{{ _ecc_dir }}'
+  register: _ecc_dir_stat
+  when: nginx_site.request_acme_cert|default(True)
+
+- name: Set ACME cert dir fact
+  set_fact:
+      _acme_cert_dir: '{{ _ecc_dir_stat.stat.exists|ternary(_ecc_dir, _rsa_dir) }}'
+  when: nginx_site.request_acme_cert|default(True)
+
 - name: "<{{ nginx_site.name }}>: Generate LE certificate"
   shell: >
       "{{ acme_home_dir }}/acme.sh"
@@ -111,13 +126,11 @@
       --standalone --httpport {{ nginx_acmesh_port }}
   args:
     chdir: '{{ _nginx_pki_dir }}'
-    creates: '{{ acme_data_dir }}/{{ nginx_site.name }}/fullchain.cer'
+    creates: '{{ _acme_cert_dir }}/fullchain.cer'
   become_user: '{{ acme_user }}'
   become: true
   notify: reload nginx
   when: nginx_site.request_acme_cert|default(True) and nginx_site.with_ssl|default(True) and need_chainfile
-
-- meta: flush_handlers
 
 - name: "<{{ nginx_site.name }}>: Install LE certificate"
   shell: >
@@ -135,6 +148,8 @@
   notify: restart nginx
   when: nginx_site.request_acme_cert|default(True) and (nginx_site.with_ssl|default(True))
 
+- name: Make sure we can restart nginx
+  command: systemctl reset-failed nginx
 
 - meta: flush_handlers
   when: not nginx_less_restarts|default(False)
