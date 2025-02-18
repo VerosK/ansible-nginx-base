@@ -27,7 +27,7 @@
     owner: '{{ acme_user }}'
     mode: '{{ nginx_config_dir_permissions }}'
 
-- name: "Create <{{ nginx_site.name }}> config"
+- name: "Create <{{ nginx_site.name }}{{_nginx_config_suffix}}> config"
   template:
     dest: "{{ nginx_sites_dir }}/{{ nginx_site.name }}{{ _nginx_config_suffix }}.conf"
     src: nginx-static-site.j2
@@ -36,14 +36,14 @@
   register: _nginx_config
   notify: reload nginx
 
-- name: "Create <{{ nginx_site.name }}> root"
+- name: "Create <{{ nginx_site.name }}{{_nginx_config_suffix}}> root"
   file:
     path: '{{ _nginx_root }}'
     state: directory
     mode: '{{ nginx_config_dir_permissions }}'
   when: nginx_site.request_acme_cert|default(True)
 
-- name: "Create <{{ nginx_site.name }}> index"
+- name: "Create <{{ nginx_site.name }}{{_nginx_config_suffix}}> index"
   copy:
     dest: '{{ _nginx_root }}/index.html'
     content: 'Hello to {{ nginx_site.name }}'
@@ -51,20 +51,20 @@
     force: false
   when: nginx_site.request_acme_cert|default(True)
 
-- name: "<{{ nginx_site.name }}>: Create passwords"
+- name: "<{{ nginx_site.name }}{{_nginx_config_suffix}}>: Create passwords"
   template:
     dest: "{{ _nginx_host_passwd_file }}"
     src: nginx-htpasswd.j2
     mode: '{{ nginx_config_permissions }}'
   when: nginx_site.http_basic_auth is defined
 
-- name: "<{{ nginx_site.name }}>: Check certificate exists"
+- name: "<{{ nginx_site.name }}{{_nginx_config_suffix}}>: Check certificate exists"
   stat:
     path: '{{ _nginx_pki_dir }}/fullchain.pem'
   register: need_chainfile
   when: nginx_site.request_acme_cert|default(True)
 
-- name: "<{{ nginx_site.name }}>: Create dummy chainfile"
+- name: "<{{ nginx_site.name }}{{_nginx_config_suffix}}>: Create dummy chainfile"
   shell: |
     openssl req -x509 -newkey rsa:4096 -keyout key.pem -out fullchain.pem -days 42 -nodes -subj '/C=XX/O=Dummy Certificate/CN={{ nginx_site.name }}'
   args:
@@ -75,7 +75,7 @@
   when: nginx_site.with_ssl|default(True) and need_chainfile
   register: need_chainfile
 
-- name: "<{{ nginx_site.name }}>: Make sure nginx can read temporary certificates"
+- name: "<{{ nginx_site.name }}{{_nginx_config_suffix}}>: Make sure nginx can read temporary certificates"
   file:  # noqa 503
     path: '{{ _nginx_pki_dir }}/{{ item }}'
     state: file
@@ -87,7 +87,7 @@
     - key.pem
   when: need_chainfile.changed
 
-- name: "<{{ nginx_site.name }}>: Restart nginx with added config"
+- name: "<{{ nginx_site.name }}{{_nginx_config_suffix}}>: Restart nginx with added config"
   service:  # noqa 503
     name: nginx
     state: restarted
@@ -108,7 +108,7 @@
     _ecc_dir:  '{{ acme_data_dir }}/{{ nginx_site.name }}_ecc'
     _rsa_dir:  '{{ acme_data_dir }}/{{ nginx_site.name }}'
 
-- name: Check ECC dir existence
+- name: "<{{ nginx_site.name }}{{_nginx_config_suffix}}>: Check ECC dir existence"
   stat:
     path: '{{ _ecc_dir }}'
   register: _ecc_dir_stat
@@ -119,7 +119,7 @@
       _acme_cert_dir: '{{ _ecc_dir_stat.stat.exists|ternary(_ecc_dir, _rsa_dir) }}'
   when: nginx_site.request_acme_cert|default(True)
 
-- name: "<{{ nginx_site.name }}>: Generate LE certificate"
+- name: "<{{ nginx_site.name }}{{_nginx_config_suffix}}>: Generate LE certificate"
   shell: >
       "{{ acme_home_dir }}/acme.sh"
       --issue -d "{{ nginx_site.name }}"
@@ -132,7 +132,7 @@
   notify: reload nginx
   when: nginx_site.request_acme_cert|default(True) and nginx_site.with_ssl|default(True) and need_chainfile
 
-- name: "<{{ nginx_site.name }}>: Install LE certificate"
+- name: "<{{ nginx_site.name }}{{_nginx_config_suffix}}>: Install LE certificate"
   shell: >
       "{{ acme_home_dir }}/acme.sh" --installcert -d "{{ nginx_site.name }}"
       --certpath "{{ _nginx_pki_dir }}/cert.pem"
